@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Birthday Cake</title>
+<style>
+  .cake {
+    position: relative;
+    width: 200px;
+    height: 100px;
+    background-color: pink;
+    margin: 50px auto;
+    text-align: center;
+  }
+  .candle {
+    position: absolute;
+    top: -50px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 10px;
+    height: 50px;
+    background-color: red;
+  }
+  .flame {
+    position: absolute;
+    top: -60px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 10px;
+    height: 10px;
+    background-color: orange;
+    border-radius: 50%;
+    display: none;
+  }
+</style>
+</head>
+<body>
+
+<div class="cake">
+  <div class="candle">
+    <div class="flame"></div>
+  </div>
+</div>
+
+<script>
+  window.onload = function() {
+    var flame = document.querySelector('.flame');
+    flame.style.display = 'block';
+
+    navigator.mediaDevices.getUserMedia({ audio: true })
+      .then(stream => {
+        const audioContext = new AudioContext();
+        const microphone = audioContext.createMediaStreamSource(stream);
+        const analyser = audioContext.createAnalyser();
+        microphone.connect(analyser);
+        const frequencyData = new Uint8Array(analyser.frequencyBinCount);
+
+        function update() {
+          requestAnimationFrame(update);
+          analyser.getByteFrequencyData(frequencyData);
+          let sum = frequencyData.reduce((a, b) => a + b, 0);
+          if (sum > 2000) { // Threshold of volume to blow out the candle
+            flame.style.display = 'none';
+          }
+        }
+
+        update();
+      })
+      .catch(error => {
+        console.error(error);
+      });
+  };
+</script>
+
+</body>
+</html>
